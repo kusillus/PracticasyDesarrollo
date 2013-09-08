@@ -2,7 +2,6 @@ window.addEventListener('load',init,false);
 //addEventListener('evento', funcion_a_lanzar,booleano) indica que permanesca atento a la interaccion de el usuario sobre un elemento en concreto
 //sin necesidad de tocar una tecla, dependiendo de el booleano sabremos el fluujo del evento "captura" o "burbuja"
 //Aqui mas info para que quede claro http://www.codexexempla.org/curso/curso_4_3_e.php
-var wall=new Array();//nueva variable que contendra a todos los elementos de tipo "pared"
 var canvas=null,ctx=null;//creamos 2 variables nulas donde guardaremos nuestro canvas y su contexto
 var player=new Rectangle(40,40,10,10);//elimina x e y para crear player de tipo rectangulo
 var food=new Rectangle(80,80,10,10);
@@ -11,7 +10,14 @@ var score=0;//almecena el puntaje
 var lastkey=null;//variable que almacena la ultima tecla precionada
 var PAUSE=true;//variable booleana para pausar el juego
 var dir=0;//variable que nos dira hacia donde debe ir el objeto
-var GAMEOVER=true;
+var GAMEOVER=true;//su nombre lo dice todo...
+var wall=new Array();//nueva variable que contendra a todos los elementos de tipo "pared"
+//el siguiente arreglo contiene todos los elementos de tipo pared
+wall.push(new Rectangle(100,50,10,10));
+wall.push(new Rectangle(100,100,10,10));
+wall.push(new Rectangle(200,50,10,10));
+wall.push(new Rectangle(200,200,10,10));
+
 function random(max){
 	return Math.floor(Math.random()*max);//funcion que genera numeros enteros al azar
 }
@@ -29,45 +35,70 @@ function run(){
 	paint(ctx);
 }
 
+//Funcion Reset encargada de poner en 0 todo 
+function reset(){
+	score=0;
+	dir=1;
+	player.x=40;
+	player.y=40;
+	food.x=random(canvas.width/10-1)*10;
+	food.y=random(canvas.height/10-1)*10;
+	GAMEOVER=false;
+}
 
 function game(){
 	if(!PAUSE){
-	//cambio de direccion 
-	if(lastkey==38)//precionando la tecla hacia arriba
+	//GameOver Reset
+		if(GAMEOVER)
+		reset();//llamamos a la funcion reset
+		//cambio de direccion 
+		if(lastkey==38)//precionando la tecla hacia arriba
 		dir=0;
-	if(lastkey==39)//precionando la tevla hacia la derecha
+		if(lastkey==39)//precionando la tevla hacia la derecha
 		dir=1;
-	if(lastkey==40)//precionando la tevla hacia abajo
+		if(lastkey==40)//precionando la tevla hacia abajo
 		dir=2;
-	if(lastkey==37)//precionando la tevla hacia la izquierda
+		if(lastkey==37)//precionando la tevla hacia la izquierda
 		dir=3;
-	//Movimiento del objeto
-	if(dir==0)
+		//Movimiento del objeto
+		if(dir==0)
 		player.y-=10;
-	if(dir==1)
+		if(dir==1)
 		player.x+=10;
-	if(dir==2)
+		if(dir==2)
 		player.y+=10;
-	if(dir==3)
+		if(dir==3)
 		player.x-=10;
 	//Si sale de pantalla
-	if(player.x>canvas.width)
-		player.x=0;
-	if(player.y>canvas.height)
-		player.y=0;
-	if(player.x<0)
-		player.x=canvas.width-10;//restamos un -10 para que el objeto no se pierda fuera del canvas
-	if(player.y<0)
-		player.y=canvas.height-10;//restamos un -10 para que el objeto no se pierda fuera del canvas
+		if(player.x>canvas.width)
+			player.x=0;
+		if(player.y>canvas.height)
+			player.y=0;
+		if(player.x<0)
+			player.x=canvas.width-10;//restamos un -10 para que el objeto no se pierda fuera del canvas
+		if(player.y<0)
+			player.y=canvas.height-10;//restamos un -10 para que el objeto no se pierda fuera del canvas
 
-	//food Intersects
-	if(player.intersects(food)){
-		score++;//aumenta el score +1
-		food.x=random(canvas.width/10-1)*10; 
-		food.y=random(canvas.height/10-1)*10;
+		//food Intersects
+		if(player.intersects(food)){
+			score++;//aumenta el score +1
+			food.x=random(canvas.width/10-1)*10; 
+			food.y=random(canvas.height/10-1)*10;
 		//la ecuacion divide la pantalla entre 10 dentro del random y multiplicarla al final denuevo, hace que la comida
 		//aparesca en un lugar cada 10 pixeles, de esta forma se ajusta a la rejilla.
-
+		}
+	//wall intersects
+		for(var i=0,l=wall.length;i<l;i++){
+		//si la comida intersecta a la pared busca otra pocicion
+			if(food.intersects(wall[i])){
+				food.x=random(canvas.width/10-1)*10;
+				food.y=random(canvas.height/10-1)*10;
+			}
+		//Si chocamos contra la pared entonces GAME OVER
+		if(player.intersects(wall[i])){
+			GAMEOVER=true;
+			PAUSE=true;
+		}
 	}
 }
 	//Pausar el juego
@@ -76,6 +107,7 @@ function game(){
 		lastkey=null;
 	}
 }
+//Todo lo que se dibuja en pantalla
 function paint(ctx){
 	ctx.clearRect(0,0,canvas.width,canvas.height);//va a limpiar nuestro canvas cada vez que se ejecute la funcion
 	ctx.fillStyle='#0f0';
@@ -83,13 +115,24 @@ function paint(ctx){
 	ctx.fillStyle='#f00';
 	ctx.fillRect(food.x,food.y,food.width,food.height);//toma parametros de food
 	//ctx.fillRect(x,y,10,10);//Le pasamos los valores de x e y para que se dibuje
+	//a continuacion para dibujar los elementos pared que se veran en pantalla recorreremos el arreglo con un for
+	ctx.fillStyle='#999';
+	for(var i=0,l=wall.length;i<l;i++){
+		ctx.fillRect(wall[i].x,wall[i].y, wall[i].width, wall[i].height);
+	}
 	ctx.fillStyle='#fff';
 	ctx.fillText('keyCode o TeclaPresionada '+lastkey,10,40);//Nos dira que tecla estamos precionando
 	ctx.fillText('Tu Sc0R3: '+score,20,20);
 	ctx.fillText('by X3N',10,290);
 	//Al inicio la el juego estara en pause asi que cada 50 milisegundos se estara imprimiento el siguiente mensaje
-	if(PAUSE)
-		ctx.fillText('PAUSE',140,75);
+	if(PAUSE){
+		ctx.textAlign='center';
+		if(GAMEOVER)
+		ctx.fillText('GameOver',140,75);
+		else
+			ctx.fillText('PAUSE',140,75);
+			ctx.textAlign='left';
+	}
 }
 document.addEventListener('keydown',function(lol){lastkey=lol.keyCode;},false);//esta funcion asigna a lastkey la tecla q estamos precionando
 
