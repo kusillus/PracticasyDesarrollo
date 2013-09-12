@@ -14,7 +14,7 @@ var GAMEOVER=true;//su nombre lo dice todo...
 var wall=new Array();//nueva variable que contendra a todos los elementos de tipo "pared"
 //el siguiente arreglo contiene todos los elementos de tipo pared
 wall.push(new Rectangle(100,50,10,10));
-wall.push(new Rectangle(100,100,10,10));
+wall.push(new Rectangle(100,200,10,10));
 wall.push(new Rectangle(200,50,10,10));
 wall.push(new Rectangle(200,200,10,10));
 
@@ -41,8 +41,10 @@ function reset(){
 	dir=1;
 	player.x=40;
 	player.y=40;
-	food.x=random(canvas.width/10-1)*10;
-	food.y=random(canvas.height/10-1)*10;
+	food.x=random((canvas.width-10)/10-1)*10;
+	food.y=random((canvas.height-10)/10-1)*10;
+	player.height=10;
+	player.width=10;
 	GAMEOVER=false;
 }
 
@@ -70,9 +72,9 @@ function game(){
 		if(dir==3)
 		player.x-=10;
 	//Si sale de pantalla
-		if(player.x>canvas.width)
+		if(player.x>canvas.width-10)
 			player.x=0;
-		if(player.y>canvas.height)
+		if(player.y>canvas.height-10)
 			player.y=0;
 		if(player.x<0)
 			player.x=canvas.width-10;//restamos un -10 para que el objeto no se pierda fuera del canvas
@@ -82,11 +84,19 @@ function game(){
 		//food Intersects
 		if(player.intersects(food)){
 			score++;//aumenta el score +1
+			player.width+=5;
+			player.height+=5;
 			food.x=random(canvas.width/10-1)*10; 
 			food.y=random(canvas.height/10-1)*10;
 		//la ecuacion divide la pantalla entre 10 dentro del random y multiplicarla al final denuevo, hace que la comida
 		//aparesca en un lugar cada 10 pixeles, de esta forma se ajusta a la rejilla.
 		}
+		//Pequeña condicional que pasa si llegas a un determinado puntaje
+		if(score>3){
+			GAMEOVER=true;
+			PAUSE=true;
+		}
+
 	//wall intersects
 		for(var i=0,l=wall.length;i<l;i++){
 		//si la comida intersecta a la pared busca otra pocicion
@@ -128,10 +138,10 @@ function paint(ctx){
 	if(PAUSE){
 		ctx.textAlign='center';
 		if(GAMEOVER)
-		ctx.fillText('GameOver',140,75);
+		ctx.fillText('GameOver',300,150);
 		else
-			ctx.fillText('PAUSE',140,75);
-			ctx.textAlign='left';
+			ctx.fillText('PAUSE',300,150);
+			//ctx.textAlign='left';
 	}
 }
 document.addEventListener('keydown',function(lol){lastkey=lol.keyCode;},false);//esta funcion asigna a lastkey la tecla q estamos precionando
