@@ -1,0 +1,32 @@
+body{
+	font-size: 18px;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+header,section{
+	margin:10px auto;
+	max-width: 1200px;
+	clear: both;
+}
+header{
+	padding:20px;
+	text-align: center;
+	background-color: #F16529;
+	border-radius: 12px;
+}
+h1{
+	color: #FFFFFF;
+}
+p.center{
+	text-align: center;
+}
+a{
+	text-decoration: none;
+	color: #F16529;
+}
+canvas{
+	
+	border-radius: 12px;
+	}
+/*p.justify{
+	text-align: justify;
+}*/

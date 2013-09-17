@@ -18,7 +18,7 @@ function random(max){
 
 function init(){
 	canvas=document.getElementById('lienzo');//obtenemos nuestro lienzo buscandolo por su id
-	canvas.style.background='#000';//Asignamos un color a nuestro lienzo
+	canvas.style.background='#FFFFFF';//Asignamos un color a nuestro lienzo
 	ctx=canvas.getContext('2d');//Definimos el contexto en 2d, esta es nuestra herramienta para pintar dentrp del lienzo(es como nuestro pincel)
 	run();//esta es la funcion que se ejecutara.
 	}
@@ -117,15 +117,15 @@ function game(){
 //Todo lo que se dibuja en pantalla
 function paint(ctx){
 	ctx.clearRect(0,0,canvas.width,canvas.height);//va a limpiar nuestro canvas cada vez que se ejecute la funcion
-	ctx.fillStyle='#0f0';
+	ctx.fillStyle='#58BF16';
 	for(var i=0,l=body.length;i<l;i++){//Arreglo que dibujara cada parte de nuestra Snake
 		ctx.fillRect(body[i].x,body[i].y,body[i].width,body[i].height);
 	}
-	ctx.fillStyle='#f00';
+	ctx.fillStyle='#E44D26';
 	ctx.fillRect(food.x,food.y,food.width,food.height);//toma parametros de food
-	ctx.fillStyle='#fff';
-	ctx.fillText('keyCode o TeclaPresionada '+lastkey,10,20);//Nos dira que tecla estamos precionando
-	ctx.fillText('Tu Sc0R3: '+score,530,20);
+	ctx.fillStyle='#000000';
+	ctx.fillText('LastKey '+lastkey,530,20);//Nos dira que tecla estamos precionando
+	ctx.fillText('SCORE: '+score,10,20);
 	ctx.fillText('by lx',10,290);
 	//Al inicio la el juego estara en pause asi que cada 50 milisegundos se estara imprimiento el siguiente mensaje
 	if(PAUSE){
