@@ -3,20 +3,14 @@ window.addEventListener('load',init,false);
 //sin necesidad de tocar una tecla, dependiendo de el booleano sabremos el fluujo del evento "captura" o "burbuja"
 //Aqui mas info para que quede claro http://www.codexexempla.org/curso/curso_4_3_e.php
 var canvas=null,ctx=null;//creamos 2 variables nulas donde guardaremos nuestro canvas y su contexto
-var player=new Rectangle(40,40,10,10);//elimina x e y para crear player de tipo rectangulo
-var food=new Rectangle(80,80,10,10);
+var body=new Array();//Array que contendra el cuerpo de Snake
+var food=new Rectangle(80,80,10,10);//creamos la comida
 var score=0;//almecena el puntaje
-//var x=50,y=50;//estas variables nos daran la pocicion de nuestro cuadrado
 var lastkey=null;//variable que almacena la ultima tecla precionada
 var PAUSE=true;//variable booleana para pausar el juego
 var dir=0;//variable que nos dira hacia donde debe ir el objeto
 var GAMEOVER=true;//su nombre lo dice todo...
-var wall=new Array();//nueva variable que contendra a todos los elementos de tipo "pared"
-//el siguiente arreglo contiene todos los elementos de tipo pared
-wall.push(new Rectangle(100,50,10,10));
-wall.push(new Rectangle(100,200,10,10));
-wall.push(new Rectangle(200,50,10,10));
-wall.push(new Rectangle(200,200,10,10));
+
 
 function random(max){
 	return Math.floor(Math.random()*max);//funcion que genera numeros enteros al azar
@@ -39,12 +33,12 @@ function run(){
 function reset(){
 	score=0;
 	dir=1;
-	player.x=40;
-	player.y=40;
-	food.x=random((canvas.width-10)/10-1)*10;
-	food.y=random((canvas.height-10)/10-1)*10;
-	player.height=10;
-	player.width=10;
+	body.length=0;//ponemos a 0 la long de la serpiente para que cuando iniciemos no se sume a lo que teniamos anteriormente.
+	body.push(new Rectangle(150,40,10,10));//cabeza de snake
+	body.push(new Rectangle(0,0,10,10));
+	body.push(new Rectangle(0,0,10,10));
+	food.x=random(canvas.width/10-1)*10;
+	food.y=random(canvas.height/10-1)*10;
 	GAMEOVER=false;
 }
 
@@ -53,87 +47,86 @@ function game(){
 	//GameOver Reset
 		if(GAMEOVER)
 		reset();//llamamos a la funcion reset
-		//cambio de direccion 
-		if(lastkey==38)//precionando la tecla hacia arriba
+
+	//Mover Cuerpo
+	for(var i=body.length-1;i>0;i--){
+		body[i].x=body[i-1].x;
+		body[i].y=body[i-1].y;
+		//este "for" lo que hace es mover de atras hacia adelante dando un efecto de oruga
+		//haciendo que el ultimo elemento tome la pocicion de el anterior tanto en x como en y.
+	}
+
+	//cambio de direccion 
+		if(lastkey==38&&dir!=2)//precionando la tecla hacia arriba
 		dir=0;
-		if(lastkey==39)//precionando la tevla hacia la derecha
+		if(lastkey==39&&dir!=3)//precionando la tevla hacia la derecha
 		dir=1;
-		if(lastkey==40)//precionando la tevla hacia abajo
+		if(lastkey==40&&dir!=0)//precionando la tevla hacia abajo
 		dir=2;
-		if(lastkey==37)//precionando la tevla hacia la izquierda
+		if(lastkey==37&&dir!=1)//precionando la tevla hacia la izquierda
 		dir=3;
-		//Movimiento del objeto
+		//nos haceguramos que la ultima tecla pracionada no sea su opuesta por que no ira en reversa solo girara.
+	
+	//Move head
+	//depende de que tecla fue precionada se suma o resta de manera que se ira moviendo a lo largo del canvas
 		if(dir==0)
-		player.y-=10;
+		body[0].y-=10;
 		if(dir==1)
-		player.x+=10;
+		body[0].x+=10;
 		if(dir==2)
-		player.y+=10;
+		body[0].y+=10;
 		if(dir==3)
-		player.x-=10;
+		body[0].x-=10;
+
 	//Si sale de pantalla
-		if(player.x>canvas.width-10)
-			player.x=0;
-		if(player.y>canvas.height-10)
-			player.y=0;
-		if(player.x<0)
-			player.x=canvas.width-10;//restamos un -10 para que el objeto no se pierda fuera del canvas
-		if(player.y<0)
-			player.y=canvas.height-10;//restamos un -10 para que el objeto no se pierda fuera del canvas
+	//Restandole body[0].width a canvas.width evitamos q snake se pierda fuera de pantalla
+		if(body[0].x>canvas.width-body[0].width)
+			body[0].x=0;
+		if(body[0].y>canvas.height-body[0].height)
+			body[0].y=0;
+		if(body[0].x<0)
+			body[0].x=canvas.width-body[0].width;
+		if(body[0].y<0)
+			body[0].y=canvas.height-body[0].height;
 
 		//food Intersects
-		if(player.intersects(food)){
+		if(body[0].intersects(food)){
+			body.push(new Rectangle(0,0,10,10));
 			score++;//aumenta el score +1
-			player.width+=5;
-			player.height+=5;
 			food.x=random(canvas.width/10-1)*10; 
 			food.y=random(canvas.height/10-1)*10;
 		//la ecuacion divide la pantalla entre 10 dentro del random y multiplicarla al final denuevo, hace que la comida
 		//aparesca en un lugar cada 10 pixeles, de esta forma se ajusta a la rejilla.
 		}
-		//Pequeña condicional que pasa si llegas a un determinado puntaje
-		if(score>3){
-			GAMEOVER=true;
-			PAUSE=true;
-		}
-
-	//wall intersects
-		for(var i=0,l=wall.length;i<l;i++){
-		//si la comida intersecta a la pared busca otra pocicion
-			if(food.intersects(wall[i])){
-				food.x=random(canvas.width/10-1)*10;
-				food.y=random(canvas.height/10-1)*10;
+	
+		//body Intersects
+		for(var i=2,l=body.length;i<l;i++){//comprueba q cada parte del cuerpo no se intercepte con la cabeza.
+			if(body[0].intersects(body[i])){//si la cabeza choca con el cuerpo...
+				GAMEOVER=true;
+				PAUSE=true;
 			}
-		//Si chocamos contra la pared entonces GAME OVER
-		if(player.intersects(wall[i])){
-			GAMEOVER=true;
-			PAUSE=true;
 		}
+	
 	}
-}
-	//Pausar el juego
-	if(lastkey==13){
-		PAUSE=!PAUSE;//Cambia el valor de verdadero a falso y viceversa segun se precione la revla enter
-		lastkey=null;
-	}
+		//Pausar el juego
+		if(lastkey==13){
+			PAUSE=!PAUSE;//Cambia el valor de verdadero a falso y viceversa segun se precione la revla enter
+			lastkey=null;//al no haber ultima tecla precionada snake no se movera...
+						}
 }
 //Todo lo que se dibuja en pantalla
 function paint(ctx){
 	ctx.clearRect(0,0,canvas.width,canvas.height);//va a limpiar nuestro canvas cada vez que se ejecute la funcion
 	ctx.fillStyle='#0f0';
-	ctx.fillRect(player.x,player.y,player.width,player.height);//cambia la forma en que se dibuja el rectangulo tomando parametros de player
+	for(var i=0,l=body.length;i<l;i++){//Arreglo que dibujara cada parte de nuestra Snake
+		ctx.fillRect(body[i].x,body[i].y,body[i].width,body[i].height);
+	}
 	ctx.fillStyle='#f00';
 	ctx.fillRect(food.x,food.y,food.width,food.height);//toma parametros de food
-	//ctx.fillRect(x,y,10,10);//Le pasamos los valores de x e y para que se dibuje
-	//a continuacion para dibujar los elementos pared que se veran en pantalla recorreremos el arreglo con un for
-	ctx.fillStyle='#999';
-	for(var i=0,l=wall.length;i<l;i++){
-		ctx.fillRect(wall[i].x,wall[i].y, wall[i].width, wall[i].height);
-	}
 	ctx.fillStyle='#fff';
-	ctx.fillText('keyCode o TeclaPresionada '+lastkey,10,40);//Nos dira que tecla estamos precionando
-	ctx.fillText('Tu Sc0R3: '+score,20,20);
-	ctx.fillText('by X3N',10,290);
+	ctx.fillText('keyCode o TeclaPresionada '+lastkey,10,20);//Nos dira que tecla estamos precionando
+	ctx.fillText('Tu Sc0R3: '+score,530,20);
+	ctx.fillText('by lx',10,290);
 	//Al inicio la el juego estara en pause asi que cada 50 milisegundos se estara imprimiento el siguiente mensaje
 	if(PAUSE){
 		ctx.textAlign='center';
@@ -141,7 +134,7 @@ function paint(ctx){
 		ctx.fillText('GameOver',300,150);
 		else
 			ctx.fillText('PAUSE',300,150);
-			//ctx.textAlign='left';
+			ctx.textAlign='left';
 	}
 }
 document.addEventListener('keydown',function(lol){lastkey=lol.keyCode;},false);//esta funcion asigna a lastkey la tecla q estamos precionando
@@ -153,12 +146,16 @@ function Rectangle(x,y,width,height){
 	this.width=(width==null)?0:width;
 	this.height=(height==null)?this.width:height;
 
+	//funcion interseccion dentro de la funcion tipo objeto Rectangulo
 	this.intersects=function(rect){
 		if(rect!=null){
 			return(	this.x<rect.x+rect.width&&
 					this.x+this.width>rect.x&&
 					this.y<rect.y+rect.height&&
 					this.y+this.height>rect.y);
+			//si la condicion se cumple hay una interseccion(retorna true) entonces devuelve true 
+			
+			
 
 		}
 	}
