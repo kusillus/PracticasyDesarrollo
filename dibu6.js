@@ -10,6 +10,13 @@ var lastkey=null;//variable que almacena la ultima tecla precionada
 var PAUSE=true;//variable booleana para pausar el juego
 var dir=0;//variable que nos dira hacia donde debe ir el objeto
 var GAMEOVER=true;//su nombre lo dice todo...
+var iBody=new Image(), iFood=new Image();
+var aEat=new Audio(), aDie=new Audio();
+iBody.src='media/snake.png';
+iFood.src='media/food.png';
+aEat.src='media/eat.mp3';
+aDie.src='media/die.mp3';
+
 
 
 function random(max){
@@ -92,6 +99,7 @@ function game(){
 		//food Intersects
 		if(body[0].intersects(food)){
 			body.push(new Rectangle(0,0,10,10));
+			aEat.play();
 			score++;//aumenta el score +1
 			food.x=random(canvas.width/10-1)*10; 
 			food.y=random(canvas.height/10-1)*10;
@@ -102,6 +110,7 @@ function game(){
 		//body Intersects
 		for(var i=2,l=body.length;i<l;i++){//comprueba q cada parte del cuerpo no se intercepte con la cabeza.
 			if(body[0].intersects(body[i])){//si la cabeza choca con el cuerpo...
+				aDie.play();
 				GAMEOVER=true;
 				PAUSE=true;
 			}
@@ -119,10 +128,12 @@ function paint(ctx){
 	ctx.clearRect(0,0,canvas.width,canvas.height);//va a limpiar nuestro canvas cada vez que se ejecute la funcion
 	ctx.fillStyle='#58BF16';
 	for(var i=0,l=body.length;i<l;i++){//Arreglo que dibujara cada parte de nuestra Snake
-		ctx.fillRect(body[i].x,body[i].y,body[i].width,body[i].height);
+		//ctx.fillRect(body[i].x,body[i].y,body[i].width,body[i].height);
+		ctx.drawImage(iBody,body[i].x,body[i].y);
 	}
 	ctx.fillStyle='#E44D26';
-	ctx.fillRect(food.x,food.y,food.width,food.height);//toma parametros de food
+	//ctx.fillRect(food.x,food.y,food.width,food.height);//toma parametros de food
+	ctx.drawImage(iFood,food.x,food.y);
 	ctx.fillStyle='#000000';
 	ctx.fillText('LastKey '+lastkey,530,20);//Nos dira que tecla estamos precionando
 	ctx.fillText('SCORE: '+score,10,20);
